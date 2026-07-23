@@ -1,0 +1,55 @@
+name: Ultimate Universal Multi-OS Security Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  security-check:
+    name: Scan on ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 1. Standard Linux Environment
+          - name: Ubuntu Linux
+            os: ubuntu-latest
+            container: null
+
+          # 2. Specialized Linux Environment (Penetration Testing)
+          - name: Kali Linux
+            os: ubuntu-latest
+            container: kalilinux/kali-rolling:latest
+
+          # 3. Microsoft Windows Environment
+          - name: Windows Server
+            os: windows-latest
+            container: null
+
+          # 4. Apple macOS Environment
+          - name: Apple macOS
+            os: macos-latest
+            container: null
+
+    # Applies the Docker container dynamic overlay only for Kali Linux
+    container: ${{ matrix.container }}
+
+    steps:
+      # Step 1: Core setup required for raw Docker images like Kali Linux
+      - name: Bootstrap Package Managers (Kali Only)
+        if: matrix.container == 'kalilinux/kali-rolling:latest'
+        run: |
+          apt-get update
+          apt-get install -y git nodejs npm
+
+      # Step 2: Safely extract your repository files across all environments
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # Step 3: Native cross-platform execution of your scanner
+      - name: CVE Lite CLI
+        uses: OWASP/cve-lite-cli@v1.27.0
