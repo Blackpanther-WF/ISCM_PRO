@@ -1,0 +1,2 @@
+- name: CVE Lite CLI
+  uses: OWASP/cve-lite-cli@v1.27.0
